@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     int notwritten, totalsent, bytes_written, listenfd, bytes_read, i;
     uint32_t N, C = 0;
     char buffer[1000000]; // Allocations of up to 1MB are OK
-    uint32_t local_pcc_total[95] = {0};
+    uint32_t local_pcc_total[127] = {0};
     struct sockaddr_in serv_addr;
     socklen_t addrsize = sizeof(struct sockaddr_in);
     const int enable = 1;
