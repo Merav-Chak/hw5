@@ -84,6 +84,9 @@ int main(int argc, char *argv[]) {
     while (1) {
         // Check if we had SIGINT signal - in this case we should print the number of time that printable char was observed
         if (sigint_flag) {
+            for (i = 0; i < 95; i++) {
+                printf("char '%c' : %u times\n", (i + 32), pcc_total[i]); // i+32 because the char are in the range [32,126)
+            }
             break;
         }
         // Initialize the local array to zero
@@ -192,8 +195,5 @@ int main(int argc, char *argv[]) {
         for (i = 0; i < 95; i++) {
             printf("char '%c' : %u times\n", (i + 32), pcc_total[i]); // i+32 because the char are in the range [32,126)
         }
-    }
-    for (i = 0; i < 95; i++) {
-        printf("char '%c' : %u times\n", (i + 32), pcc_total[i]); // i+32 because the char are in the range [32,126)
     }
 }
