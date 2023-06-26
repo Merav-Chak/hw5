@@ -13,7 +13,7 @@
 int connfd = -1;
 int sigint_flag;
 size_t message_size;
-uint32_t pcc_total[95] = {0}; // The structure that counts how many times each printable character was observed in all clients. 126-32+1 = 95 (number of printable char. type)
+uint32_t pcc_total[127] = {0}; // The structure that counts how many times each printable character was observed in all clients, cells 0-31 would be 0 (I will ignore them)
 
 // Special handling for SIGINT signal
 void handle_sigint(int sig)
@@ -21,8 +21,8 @@ void handle_sigint(int sig)
     int i;
     if (connfd < 0) // not processing a client - should print the statistic
     {
-        for (i = 0; i < 95; i++) {
-            printf("char '%c' : %u times\n", (i + 32), pcc_total[i]); // i+32 because the char are in the range [32,126)
+        for (i = 32; i < 127; i++) {
+            printf("char '%c' : %u times\n", i, pcc_total[i]);
         }
         exit(0);
     } else sigint_flag = 1;  // caught in server's while loop after client processing finished
@@ -84,13 +84,13 @@ int main(int argc, char *argv[]) {
     while (1) {
         // Check if we had SIGINT signal - in this case we should print the number of time that printable char was observed
         if (sigint_flag) {
-            for (i = 0; i < 95; i++) {
-                printf("char '%c' : %u times\n", (i + 32), pcc_total[i]); // i+32 because the char are in the range [32,126)
+            for (i = 32; i < 127; i++) {
+                printf("char '%c' : %u times\n", i, pcc_total[i]);
             }
             break;
         }
         // Initialize the local array to zero
-        for (i = 0; i < 95; i++) {
+        for (i = 0; i < 127; i++) {
             local_pcc_total[i] = 0;
         }
 
@@ -149,8 +149,7 @@ int main(int argc, char *argv[]) {
             for (i = 0; i < bytes_read; i++) {
                 if (buffer[i] >= 32 && buffer[i] <= 126) // printable char.
                 {
-                    local_pcc_total[(int) (buffer[i]) -
-                                    32]++; // The cast is for having the value as integer and minus 32 is for the array cells (I have specific order)
+                    local_pcc_total[(int) (buffer[i])]++; // The cast is for having the value as integer and minus 32 is for the array cells (I have specific order)
                     C++; // We read printable char.
                 }
             }
@@ -166,9 +165,9 @@ int main(int argc, char *argv[]) {
         while (notwritten > 0) // We haven't sent all the content
         {
             // Read content from the file
-            nsent = write(connfd, (char *) &C + totalsent, notwritten);
-            if (nsent <= 0) {
-                if (nsent == 0 || errno == ETIMEDOUT || errno == ECONNRESET || errno == EPIPE) {
+            bytes_written = write(connfd, (char *) &C + totalsent, notwritten);
+            if (bytes_written <= 0) {
+                if (bytes_written == 0 || errno == ETIMEDOUT || errno == ECONNRESET || errno == EPIPE) {
                     fprintf(stderr, "Couldn't send C to the client, ERROR: %s\n", strerror(errno));
                     close(connfd);
                     connfd = -1;
@@ -179,21 +178,21 @@ int main(int argc, char *argv[]) {
                     exit(1);
                 }
             }
-            totalsent += nsent;
-            notwritten -= nsent;
+            totalsent += bytes_written;
+            notwritten -= bytes_written;
         }
         if (connfd == -1) continue; // For accepting new client connection
 
         // Finished reading and send necessary data, this is time to update the main structure
-        for (i = 0; i < 95; i++) {
+        for (i = 32; i < 127; i++) {
             pcc_total[i] += local_pcc_total[i];
         }
         close(connfd);
         connfd = -1;
         C = 0;
         N = 0;
-        for (i = 0; i < 95; i++) {
-            printf("char '%c' : %u times\n", (i + 32), pcc_total[i]); // i+32 because the char are in the range [32,126)
+        for (i = 32; i < 127; i++) {
+            printf("char '%c' : %u times\n", i , pcc_total[i]);
         }
     }
 }
