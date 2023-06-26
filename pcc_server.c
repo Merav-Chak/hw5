@@ -29,7 +29,7 @@ void handle_sigint(int sig)
 }
 
 int main(int argc, char *argv[]) {
-    int notwritten, totalsent, nsent, listenfd, bytes_read, i;
+    int notwritten, totalsent, bytes_written, listenfd, bytes_read, i;
     uint32_t N, C = 0;
     char buffer[1000000]; // Allocations of up to 1MB are OK
     uint32_t local_pcc_total[95] = {0};
