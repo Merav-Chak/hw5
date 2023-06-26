@@ -84,11 +84,7 @@ int main(int argc, char *argv[]) {
     while (1) {
         // Check if we had SIGINT signal - in this case we should print the number of time that printable char was observed
         if (sigint_flag) {
-            for (i = 0; i < 95; i++) {
-                printf("char '%c' : %u times\n", (i + 32),
-                       pcc_total[i]); // i+32 because the char are in the range [32,126)
-                exit(0);
-            }
+            break;
         }
         // Initialize the local array to zero
         for (i = 0; i < 95; i++) {
@@ -108,7 +104,7 @@ int main(int argc, char *argv[]) {
         totalsent = 0;
         notwritten = 4; // The size is 32-bit (4 bytes)
         while (notwritten > 0) {
-            bytes_read = read(listenfd, (char *) &N + totalsent, notwritten);
+            bytes_read = read(connfd, (char *) &N + totalsent, notwritten);
             if (bytes_read <= 0) {
                 if (bytes_read == 0 || errno == ETIMEDOUT || errno == ECONNRESET || errno == EPIPE) {
                     fprintf(stderr, "Couldn't receive N from the client, ERROR: %s\n", strerror(errno));
@@ -196,5 +192,8 @@ int main(int argc, char *argv[]) {
         for (i = 0; i < 95; i++) {
             printf("char '%c' : %u times\n", (i + 32), pcc_total[i]); // i+32 because the char are in the range [32,126)
         }
+    }
+    for (i = 0; i < 95; i++) {
+        printf("char '%c' : %u times\n", (i + 32), pcc_total[i]); // i+32 because the char are in the range [32,126)
     }
 }
