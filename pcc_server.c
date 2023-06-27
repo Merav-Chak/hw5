@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
             for (i = 32; i < 127; i++) {
                 printf("char '%c' : %u times\n", i, pcc_total[i]);
             }
-            break;
+            exit(0);
         }
         // Initialize the local array to zero
         for (i = 0; i < 127; i++) {
