@@ -106,6 +106,7 @@ int main(int argc, char *argv[])
         if (bytes_read == -1)
         {
             fprintf(stderr, "Couldn't read data from file, ERROR: %s\n", strerror(errno));
+            close(sockfd);
             exit(1);
         }
         nsent = write(sockfd, buffer, bytes_read);
@@ -120,6 +121,7 @@ int main(int argc, char *argv[])
         if (lseek(fd, totalsent, SEEK_SET) == -1)
         {
             fprintf(stderr, "Failed to seek to specific place of the file, ERROR: %s\n", strerror(errno));
+            close(sockfd);
             close(fd);
             exit(1);
         }
