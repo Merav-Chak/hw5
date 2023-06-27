@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
     // SIGINT handler, the struct is similar to the one I implement in hw2 (myShell)
     // Used https://man7.org/linux/man-pages/man2/sigaction.2.html and http://www.microhowto.info/howto/reap_zombie_processes_using_a_sigchld_handler.html
     struct sigaction sa;
+    memset(&sa, 0, sizeof(struct sigaction));
     sa.sa_handler = &handle_sigint;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
@@ -109,9 +110,10 @@ int main(int argc, char *argv[]) {
         while (notwritten > 0) {
             bytes_read = read(connfd, (char *) &N + totalsent, notwritten);
             if (bytes_read <= 0) {
-                if (bytes_read == 0 || errno == ETIMEDOUT || errno == ECONNRESET || errno == EPIPE) {
+                if (errno == EINTR) continue;
+                else if (bytes_read == 0 || errno == ETIMEDOUT || errno == ECONNRESET || errno == EPIPE) {
                     fprintf(stderr, "Couldn't receive N from the client, ERROR: %s\n", strerror(errno));
-                    close(listenfd);
+                    close(connfd);
                     connfd = -1;
                     break;
                 } else {
@@ -134,7 +136,8 @@ int main(int argc, char *argv[]) {
             else message_size = (size_t) notwritten; // Should be size_t format for using read system call (https://man7.org/linux/man-pages/man2/read.2.html)
             bytes_read = read(connfd, (char *) &buffer, message_size);
             if (bytes_read <= 0) {
-                if (bytes_read == 0 || errno == ETIMEDOUT || errno == ECONNRESET || errno == EPIPE) {
+                if (errno == EINTR) continue;
+                else if (bytes_read == 0 || errno == ETIMEDOUT || errno == ECONNRESET || errno == EPIPE) { // Here read returns 0 if the client closed the connection
                     fprintf(stderr, "Couldn't receive N from the client, ERROR: %s\n", strerror(errno));
                     close(connfd);
                     connfd = -1;
@@ -167,7 +170,8 @@ int main(int argc, char *argv[]) {
             // Read content from the file
             bytes_written = write(connfd, (char *) &C + totalsent, notwritten);
             if (bytes_written <= 0) {
-                if (bytes_written == 0 || errno == ETIMEDOUT || errno == ECONNRESET || errno == EPIPE) {
+                if (errno == EINTR) continue;
+                else if (bytes_written == 0 || errno == ETIMEDOUT || errno == ECONNRESET || errno == EPIPE) {
                     fprintf(stderr, "Couldn't send C to the client, ERROR: %s\n", strerror(errno));
                     close(connfd);
                     connfd = -1;
@@ -191,8 +195,5 @@ int main(int argc, char *argv[]) {
         connfd = -1;
         C = 0;
         N = 0;
-        for (i = 32; i < 127; i++) {
-            printf("char '%c' : %u times\n", i , pcc_total[i]);
-        }
     }
 }
